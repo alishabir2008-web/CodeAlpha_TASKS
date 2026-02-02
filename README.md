@@ -14,20 +14,4 @@ Frontend: HTML, CSS, JavaScript
 APIs: MyMemory Translation API
 Icons: Font Awesome (via CDN)
 Fonts: Google Fonts (Roboto)
-📋 Installation & Usage
-Clone the Repository:
 
-
-Copy code
-git clone https://github.com/yourusername/CodeAlpha_LanguageTranslationTool.git
-cd CodeAlpha_LanguageTranslationTool
-Run the Project:
-
-Open index.html in any web browser (e.g., Chrome, Firefox).
-No server or installations needed—it's a static HTML file.
-How to Use:
-
-Enter text in the input box.
-Select source and target languages from the dropdowns.
-Click "Translate" to get the result.
-Use optional buttons: Swap languages, copy text, speak translation, or load quick phrases.
