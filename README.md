@@ -42,7 +42,7 @@ A fully functional FAQ-based chatbot built with HTML, CSS, and JavaScript as par
 - **Icons**: Font Awesome for UI elements
 - **Responsive Design**: Mobile-first approach
   
-  # Task 4: Object Detection and Tracking
+  # Task 3: Object Detection and Tracking
 
 📌 Project Overview
 
