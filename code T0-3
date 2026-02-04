@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Object Detection using AI</title>
+
+  <!-- TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
+
+  <!-- COCO-SSD Model -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+    }
+    video {
+      border: 2px solid black;
+    }
+    canvas {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Real-Time Object Detection (AI)</h2>
+  <p>Using TensorFlow.js + COCO-SSD</p>
+
+  <video id="video" width="640" height="480" autoplay></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    async function setupCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true
+      });
+      video.srcObject = stream;
+
+      return new Promise(resolve => {
+        video.onloadedmetadata = () => {
+          resolve(video);
+        };
+      });
+    }
+
+    async function detectObjects() {
+      const model = await cocoSsd.load();
+      console.log("Model Loaded");
+
+      setInterval(async () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const predictions = await model.detect(video);
+
+        predictions.forEach(pred => {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(...pred.bbox);
+
+          ctx.fillStyle = "red";
+          ctx.font = "16px Arial";
+          ctx.fillText(
+            pred.class + " (" + Math.round(pred.score * 100) + "%)",
+            pred.bbox[0],
+            pred.bbox[1] > 10 ? pred.bbox[1] - 5 : 10
+          );
+        });
+      }, 100);
+    }
+
+    async function start() {
+      await setupCamera();
+      detectObjects();
+    }
+
+    start();
+  </script>
+
+</body>
+</html>
