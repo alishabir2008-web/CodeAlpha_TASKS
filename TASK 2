@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple FAQ Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f5f7fa;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: white;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input input:focus {
+            border-color: #8e2de2;
+        }
+        
+        .chat-input button {
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 25px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .chat-input button:hover {
+            transform: scale(1.05);
+        }
+        
+        .typing-indicator {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 10px 18px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            display: none;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #999;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.3s linear infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+        
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .time {
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+        
+        .user-message .time {
+            text-align: right;
+        }
+        
+        .bot-message .time {
+            text-align: left;
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            background: white;
+        }
+        
+        .suggestion {
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .suggestion:hover {
+            background-color: #8e2de2;
+            color: white;
+        }
+        
+        .recipe-box {
+            background-color: #fff9e6;
+            border-left: 3px solid #ffb300;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .productivity-tip {
+            background-color: #e8f5e9;
+            border-left: 3px solid #4caf50;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .code-block {
+            background-color: #f5f5f5;
+            border-left: 3px solid #4a00e0;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 90vh;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .suggestions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Simple FAQ Chatbot</h1>
+            <p>Ask me: hi, weather, jokes, recipes, productivity tips, and more!</p>
+        </div>
+        
+        <div class="chat-messages" id="messagesContainer">
+            <div class="message bot-message">
+                <div>Hello! I'm a simple chatbot that can answer common questions. Try asking about the weather, a joke, a recipe, or productivity tips!</div>
+                <div class="time" id="currentTime"></div>
+            </div>
+        </div>
+        
+        <div class="suggestions">
+            <button class="suggestion" data-question="Hi">Say Hi</button>
+            <button class="suggestion" data-question="How are you?">How are you?</button>
+            <button class="suggestion" data-question="What can you do?">Your capabilities</button>
+            <button class="suggestion" data-question="Tell me a joke">Get a joke</button>
+            <button class="suggestion" data-question="Weather today">Weather</button>
+            <button class="suggestion" data-question="Give me a recipe">Recipe</button>
+            <button class="suggestion" data-question="Productivity tips">Productivity</button>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Ask me anything..." autocomplete="off">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const suggestions = document.querySelectorAll('.suggestion');
+        const currentTimeElement = document.getElementById('currentTime');
+        
+        // Update the time in the welcome message
+        function updateCurrentTime() {
+            const now = new Date();
+            currentTimeElement.textContent = `Sent at ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // Initialize
+        updateCurrentTime();
+        
+        // Knowledge base with FAQ responses
+        const knowledgeBase = {
+            greetings: [
+                "Hello! How can I help you today?",
+                "Hi there! Nice to meet you!",
+                "Hey! What can I do for you?"
+            ],
+            
+            feelings: [
+                "I'm doing great, thanks for asking! How about you?",
+                "I'm functioning perfectly! Ready to help.",
+                "I'm excellent today! What's on your mind?"
+            ],
+            
+            capabilities: [
+                "I can tell you the weather, share jokes, give recipes, productivity tips, and answer simple questions.",
+                "I can help with: weather updates, jokes, cooking recipes, productivity advice, and general information.",
+                "My skills include: weather information, joke telling, recipe sharing, productivity tips, and answering FAQs."
+            ],
+            
+            weather: [
+                "I can't access real-time weather, but I can tell you that perfect indoor working temperature is around 22°C (72°F)!",
+                "I don't have live weather data, but I recommend checking a weather app for accurate forecasts.",
+                "For ideal productivity, keep your environment at a comfortable temperature around 20-24°C (68-75°F)."
+            ],
+            
+            jokes: [
+                "Why don't scientists trust atoms? Because they make up everything!",
+                "Why did the scarecrow win an award? Because he was outstanding in his field!",
+                "Why don't eggs tell jokes? They'd crack each other up!",
+                "What do you call a fake noodle? An impasta!",
+                "Why did the math book look so sad? Because it had too many problems!",
+                "Why did the computer go to the doctor? It had a virus!"
+            ],
+            
+            recipes: [
+                `<div class="recipe-box">
+                    <strong>Quick Pasta Recipe:</strong><br>
+                    1. Boil water with a pinch of salt<br>
+                    2. Add pasta and cook for 8-10 minutes<br>
+                    3. Sauté garlic in olive oil<br>
+                    4. Add your favorite sauce and heat through<br>
+                    5. Combine pasta with sauce and serve!
+                </div>`,
+                
+                `<div class="recipe-box">
+                    <strong>Simple Salad:</strong><br>
+                    1. Chop lettuce, tomato, cucumber, bell peppers<br>
+                    2. Add protein like grilled chicken or chickpeas<br>
+                    3. Drizzle with olive oil, lemon juice, salt, and pepper<br>
+                    4. Toss well and enjoy a healthy meal!
+                </div>`,
+                
+                `<div class="recipe-box">
+                    <strong>Easy Smoothie:</strong><br>
+                    1. Blend 1 banana, 1 cup berries, 1 cup milk/yogurt<br>
+                    2. Add a spoon of honey or maple syrup for sweetness<br>
+                    3. Blend until smooth<br>
+                    4. Pour into a glass and enjoy immediately!
+                </div>`
+            ],
+            
+            productivity: [
+                `<div class="productivity-tip">
+                    <strong>Pomodoro Technique:</strong> Work for 25 minutes, then take a 5-minute break. After 4 cycles, take a longer break (15-30 minutes).
+                </div>`,
+                
+                `<div class="productivity-tip">
+                    <strong>Time Blocking:</strong> Schedule your day in blocks dedicated to specific tasks to maintain focus and reduce multitasking.
+                </div>`,
+                
+                `<div class="productivity-tip">
+                    <strong>2-Minute Rule:</strong> If a task takes less than 2 minutes, do it immediately instead of putting it off.
+                </div>`,
+                
+                `<div class="productivity-tip">
+                    <strong>Digital Detox:</strong> Take regular breaks from screens to reduce eye strain and mental fatigue.
+                </div>`
+            ],
+            
+            time: [
+                `The current time is: ${new Date().toLocaleTimeString()}`,
+                `It's ${new Date().toLocaleTimeString()} right now`,
+                `According to my clock, it's ${new Date().toLocaleTimeString()}`
+            ],
+            
+            date: [
+                `Today is ${new Date().toDateString()}`,
+                `The date is ${new Date().toDateString()}`,
+                `It's ${new Date().toDateString()} today`
+            ],
+            
+            default: [
+                "I'm not sure I understand. Can you try asking differently?",
+                "I don't have an answer for that yet. Try asking about weather, jokes, or recipes!",
+                "That's an interesting question! I'm still learning, but I can help with common FAQs."
+            ]
+        };
+        
+        // Function to add a message to the chat
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+            
+            const messageContent = document.createElement('div');
+            
+            // Check if message contains HTML (like recipe or productivity boxes)
+            if (message.includes('<div')) {
+                messageContent.innerHTML = message;
+            } else {
+                messageContent.textContent = message;
+            }
+            
+            messageDiv.appendChild(messageContent);
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.classList.add('time');
+            const now = new Date();
+            timeDiv.textContent = `Sent at ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            messageDiv.appendChild(timeDiv);
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to the bottom of the chat
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Function to show typing indicator
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'flex';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Function to hide typing indicator
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        // Function to get bot response
+        function getBotResponse(userMessage) {
+            userMessage = userMessage.toLowerCase();
+            
+            if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
+                return knowledgeBase.greetings[Math.floor(Math.random() * knowledgeBase.greetings.length)];
+            } else if (userMessage.includes('how are you') || userMessage.includes('how do you feel')) {
+                return knowledgeBase.feelings[Math.floor(Math.random() * knowledgeBase.feelings.length)];
+            } else if (userMessage.includes('what can you do') || userMessage.includes('capabilities')) {
+                return knowledgeBase.capabilities[Math.floor(Math.random() * knowledgeBase.capabilities.length)];
+            } else if (userMessage.includes('weather')) {
+                return knowledgeBase.weather[Math.floor(Math.random() * knowledgeBase.weather.length)];
+            } else if (userMessage.includes('joke')) {
+                return knowledgeBase.jokes[Math.floor(Math.random() * knowledgeBase.jokes.length)];
+            } else if (userMessage.includes('recipe') || userMessage.includes('cook')) {
+                return knowledgeBase.recipes[Math.floor(Math.random() * knowledgeBase.recipes.length)];
+            } else if (userMessage.includes('productivity') || userMessage.includes('tip')) {
+                return knowledgeBase.productivity[Math.floor(Math.random() * knowledgeBase.productivity.length)];
+            } else if (userMessage.includes('time')) {
+                return knowledgeBase.time[Math.floor(Math.random() * knowledgeBase.time.length)];
+            } else if (userMessage.includes('date')) {
+                return knowledgeBase.date[Math.floor(Math.random() * knowledgeBase.date.length)];
+            } else {
+                return knowledgeBase.default[Math.floor(Math.random() * knowledgeBase.default.length)];
+            }
+        }
+        
+        // Function to handle user message
+        function handleUserMessage() {
+            const message = messageInput.value.trim();
+            
+            if (message === '') return;
+            
+            // Add user message to chat
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate bot thinking time
+            setTimeout(() => {
+                hideTypingIndicator();
+                const botResponse = getBotResponse(message);
+                addMessage(botResponse);
+            }, 800 + Math.random() * 800);
+        }
+        
+        // Event listeners
+        sendButton.addEventListener('click', handleUserMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserMessage();
+            }
+        });
+        
+        // Add event listeners to suggestion buttons
+        suggestions.forEach(button => {
+            button.addEventListener('click', () => {
+                messageInput.value = button.getAttribute('data-question');
+                handleUserMessage();
+            });
+        });
+        
+        // Set focus to input field
+        messageInput.focus();
+    </script>
+</body>
+</html>
